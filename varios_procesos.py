@@ -1,5 +1,7 @@
 from multiprocessing import Process, Manager, parent_process
 import os 
+import random
+import numpy as np
 def flatten_matriz(matriz):
    return [elemento for sublista in matriz for elemento in sublista]
 
@@ -24,15 +26,15 @@ def ordenar_matriz(matriz):
     matriz = reordenar_matriz(matriz, filas, columnas)
     return matriz
 
+def creacion_matriz(matriz):
+    pass
+
+
 if __name__ == "__main__":
     with Manager() as manager:
-        matriz = manager.list()
-        matriz.append([5,8,1])
-        matriz.append([2,7])
+        matriz = manager.Array('d',np.ones((5, 5)))
+        #arr = Array('i', range(10))
+        proceso_creacion_matriz = Process (target = creacion_matriz, args = (matriz,))
+        proceso_creacion_matriz.start()
+        proceso_creacion_matriz.join()
         print(matriz)
-        p = Process(target = ordenar_matriz, args=(matriz,))
-        print(os.getpid(), 'proceso hijo')
-        print(os.getppid(), 'proceso padre')
-        p.start()
-        p.join()
-        print(matriz[:])
