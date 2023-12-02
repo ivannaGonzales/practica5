@@ -3,6 +3,7 @@ import subprocess
 import os
 import time
 import signal
+import numpy as np
 
 def store_pids():
   pid_array = []
@@ -59,19 +60,34 @@ def es_proceso_terminado(pid):
    else:
        return False
 
-def function_to_run(x, y, z):
+def bubble_sort(matriz):
     # Aquí va el código que quieres ejecutar en paralelo
+    print('inicio ',matriz,' matriz')
     print(f"PID: {os.getpid()}")
-    
-    time.sleep(15)
-    obtener_informacion_proceso(os.getpid())
-    return x + y + z
+    comando = f"ps -p {os.getpid()} -o pid,ppid,cmd,psr,%mem,%cpu"
+    proceso = subprocess.Popen(comando, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    salida, error = proceso.communicate(timeout=1)
+    if error:
+        print(f"Error al obtener información del proceso: {error}")
+    elif salida:
+        print(salida.decode())
+    n = len(matriz)
+    for i in range(n-1):
+       for j in range(n-i-1):
+           if(matriz[j] > matriz[j+1]):
+                matriz[j], matriz[j+1] = matriz[j+1], matriz[j]
+    return matriz
 
 if __name__ == "__main__":
-    pool = Pool() # Crea un pool de procesos
     # Crea una lista de triples de números
-    numbers = [(1, 2, 3), (4, 5, 6), (7, 8, 9), (10, 11, 12), (13, 14, 15)]
     # Usa starmap para aplicar function_to_run a cada triple de números
-    results = pool.starmap(function_to_run, numbers)
+    filas = np.random.randint(0,100,size=(4,100000))
+    print(filas)
+    start_time = time.time()
+    pool = Pool() # Crea un pool de procesos
+    results = pool.map(bubble_sort, filas)
+    end_time = time.time() 
     # Imprime los resultados
     print(results)
+    execution_time = end_time - start_time
+    print(f"El programa se ejecutó en: {execution_time} segundos")
